@@ -6,6 +6,7 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -32,6 +33,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseError;
@@ -52,6 +54,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private static final int REQUEST_CODE = 101;
     private View zoomControls, locationButton;
     private RelativeLayout.LayoutParams rlp, params_zoom;
+    private FloatingActionButton btnAdd;
 
 
     @SuppressLint("ResourceType")
@@ -60,9 +63,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+        btnAdd = findViewById(R.id.fab_add);
 
         // ZoomControl is inside of RelativeLayout
         zoomControls = mapFragment.getView().findViewById(0x1);
@@ -73,12 +76,24 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         // and next place it, for example, on bottom right (as Google Maps app)
         rlp = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
 
+
+        btnAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openAddActivity();
+            }
+        });
+
         // retrieve current Location from the phone
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         fetchLastLocation();
 
     }
 
+    public void openAddActivity() {
+        Intent intent = new Intent(MapActivity.this, AddEventActivity.class);
+        startActivity(intent);
+    }
 
     @Override
     public void onLocationChanged(Location location) {
