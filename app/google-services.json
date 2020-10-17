@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "148679540672",
+    "firebase_url": "https://dubhacks-2020.firebaseio.com",
+    "project_id": "dubhacks-2020",
+    "storage_bucket": "dubhacks-2020.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:148679540672:android:c2176f37fdd4f37afcd225",
+        "android_client_info": {
+          "package_name": "com.dubhacks.alms"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "148679540672-5fvlafcik20g3bachkfo2tia0doqd4mf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8z3-7FhnyG64cGsp0pVt9BrTInAw29LQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "148679540672-5fvlafcik20g3bachkfo2tia0doqd4mf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

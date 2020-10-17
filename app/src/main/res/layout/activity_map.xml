@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<com.sothree.slidinguppanel.SlidingUpPanelLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/sliding_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="bottom"
+    app:umanoDragView="@+id/dragView"
+    app:umanoOverlay="false"
+    app:umanoPanelHeight="70dp"
+    app:umanoParallaxOffset="200dp"
+    app:umanoShadowHeight="10dp"
+    app:umanoInitialState="hidden"
+    tools:context=".MapActivity">
+
+    <!-- MAIN CONTENT -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:id="@+id/map_content">
+
+        <fragment
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+<!--        <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--            android:id="@+id/fab_add"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginBottom="56dp"-->
+<!--            android:layout_marginStart="20dp"-->
+<!--            android:layout_alignParentBottom="true"-->
+<!--            android:layout_alignParentLeft="true"-->
+<!--            app:backgroundTint="@color/colorAccent"-->
+<!--            app:srcCompat="@drawable/ic_add" />-->
+
+
+    </RelativeLayout>
+    <!-- SLIDING LAYOUT -->
+    <LinearLayout
+        android:id="@+id/dragView"
+        android:layout_width="match_parent"
+        android:layout_height="460dp"
+        android:background="@android:color/white"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:orientation="vertical">
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</com.sothree.slidinguppanel.SlidingUpPanelLayout>
+
+
+
