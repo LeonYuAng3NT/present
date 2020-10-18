@@ -213,7 +213,7 @@ public class AddEventActivity extends AppCompatActivity {
         });
 
         //create a list of closed day
-        String[] cats = new String[]{"Food", "HealthCare",
+        String[] cats = new String[]{"Food", "Health Care",
                 "Essential", "Clothes"};
 
         // display list of closed days in chip
