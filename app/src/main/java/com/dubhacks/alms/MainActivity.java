@@ -1,11 +1,11 @@
 package com.dubhacks.alms;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
     Button btnHost, btnUser;
@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
         btnHost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // go to login page Activity
+                openLoginActivity();
 
             }
         });
@@ -43,4 +43,11 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    /**
+     * Sends a user to the login page
+     */
+    public void openLoginActivity() {
+        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+        startActivity(intent);
+    }
 }

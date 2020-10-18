@@ -1,9 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".RegisterActivity">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <TextView
+        android:id="@+id/signUpPrompt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="111dp"
+        android:text="Sign Up"
+        android:textSize="50dp" />
+
+    <EditText
+        android:id="@+id/emailSign"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_below="@+id/signUpPrompt"
+        android:layout_marginTop="90dp"
+        android:focusable="true"
+        android:hint="Email" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_below = "@+id/emailSign"
+        android:id = "@+id/passwordSign"
+        android:hint = "Password"
+        android:focusable="true"
+        />
+
+    <Button
+        android:id="@+id/btnSign"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/passwordSign"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="65dp"
+        android:text="Sign UP" />
+
+</RelativeLayout>
