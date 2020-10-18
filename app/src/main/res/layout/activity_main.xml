@@ -6,20 +6,40 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="70dp"
+        android:src="@drawable/app_icon" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/imageView"
+        android:layout_marginTop="20dp"
+        android:text="@string/logo"
+        android:textSize="17sp"
+        android:textColor="#0DA1F2"
+        />
     <Button
+        android:id="@+id/btnHost"
         android:layout_width="match_parent"
         android:layout_height="80dp"
-        android:id="@+id/btnHost"
-        android:text="Event host"
-        />
+        android:layout_marginTop="320dp"
+        android:text="@string/hosting"
+        android:textAllCaps="false" />
 
     <Button
-        android:layout_below="@+id/btnHost"
+        android:id="@+id/btnUser"
         android:layout_width="match_parent"
         android:layout_height="80dp"
-        android:id="@+id/btnUser"
-        android:text="User"
-        />
+        android:layout_below="@+id/btnHost"
+        android:layout_marginTop="30dp"
+        android:textAllCaps="false"
+        android:text="@string/in_need" />
 
 
 </RelativeLayout>
