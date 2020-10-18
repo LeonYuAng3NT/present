@@ -4,15 +4,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.ImageCapture;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.ActivityNotFoundException;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -29,9 +26,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.MediaStore;
-import android.util.Log;
-import android.util.Size;
 import android.os.Message;
 import android.util.Log;
 import android.view.Gravity;
@@ -93,7 +87,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-
 import java.util.List;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener,
@@ -116,8 +109,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private TextView name, location;
     private ListView  eventsList, listInfo;
     private ChipGroup chipGroup;
-    private static final int REQUEST_IMAGE_CAPTURE = 1;
-
     private PopupWindow pw;
     private List<Pair<String, Events>> listView = new ArrayList<>();
     private Button btnLoadMore;
@@ -129,7 +120,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private int mItemPerRow = 6;
     private int countList = 0;
     public boolean isLoading = false;
-
 
     @SuppressLint("ResourceType")
     @Override
@@ -176,7 +166,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         // connect to firebase
         mDataEvents = FirebaseDatabase.getInstance().getReference("Events");
         mDataGeoFire = FirebaseDatabase.getInstance().getReference("GeoFire");
-/*
+
         // btnUser function
         btnUser.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -201,7 +191,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 alertDialog.show();
             }
         });
-*/
+
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -224,13 +214,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             }
         });
 
-
-
         // retrieve current Location from the phone
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         fetchLastLocation();
-
-        //dispatchTakePictureIntent();
 
     }
 
@@ -250,33 +236,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         Intent intent = new Intent(MapActivity.this, AddEventActivity.class);
         startActivity(intent);
     }
-/*
-    private void dispatchTakePictureIntent() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        try {
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-        } catch (ActivityNotFoundException e) {
-            // display error state to the user
-        }
-    }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
-            ImageAnalysis imageAnalysis =  new ImageAnalysis.Builder()
-                    .setTargetResolution(new Size(1280, 720))
-                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                    .build();
-            LandMarkAnalyzer analyzer = new LandMarkAnalyzer();
-            analyzer.analyze(imageBitmap);
-
-        }
-    }
-*/
     @Override
     public void onLocationChanged(Location location) {
 
@@ -777,9 +737,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     Double lat = currentLocation.getLatitude();
                     Double lng = currentLocation.getLongitude();
                     if (distance(lat, lng, currentLocation.getLatitude(), currentLocation.getLongitude()) > 10) {
-                                        mMap.clear();
-                                        listView.clear();
-                                    }
+                        mMap.clear();
+                        listView.clear();
+                    }
                 }
 
             }
