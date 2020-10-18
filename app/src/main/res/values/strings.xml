@@ -1,3 +1,6 @@
 <resources>
-    <string name="app_name">alms</string>
+    <string name="app_name">Present</string>
+    <string name="logo">Together we come through the hard times.</string>
+    <string name="hosting">Host An Event</string>
+    <string name="in_need">Explore Events Nearby</string>
 </resources>

@@ -24,6 +24,7 @@
         android:layout_below="@+id/signUpPrompt"
         android:layout_marginTop="90dp"
         android:focusable="true"
+        android:singleLine="true"
         android:hint="Email" />
 
     <EditText
@@ -31,6 +32,8 @@
         android:layout_height="70dp"
         android:layout_below = "@+id/emailSign"
         android:id = "@+id/passwordSign"
+        android:singleLine="true"
+        android:inputType = "textPassword"
         android:hint = "Password"
         android:focusable="true"
         />
