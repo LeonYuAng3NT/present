@@ -6,8 +6,8 @@
 
     <ImageView
         android:id="@+id/icon"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         android:padding="5dp"
         android:layout_marginTop="10dp"/>
 
@@ -19,11 +19,12 @@
             android:id="@+id/eventInfo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Medium Text"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_marginLeft="10dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="13dp"
+            android:layout_marginBottom="16dp"
             android:padding="2dp"
+            android:divider="?android:attr/dividerHorizontal"
             android:textColor="@color/quantum_black_100"/>
 
     </LinearLayout>

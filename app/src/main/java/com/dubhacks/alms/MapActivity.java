@@ -13,6 +13,9 @@ import androidx.fragment.app.FragmentActivity;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ActivityNotFoundException;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -24,18 +27,29 @@ import android.location.LocationListener;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.util.Size;
+import android.os.Message;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.dubhacks.alms.Adapter.EventInfoAdapter;
+import com.dubhacks.alms.Adapter.eventPairsLVAdapter;
 import com.dubhacks.alms.Model.Events;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
@@ -72,6 +86,14 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.core.utilities.Pair;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+
 import java.util.List;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener,
@@ -90,17 +112,47 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private static final int REQUEST_CODE = 101;
     private View zoomControls, locationButton;
     private RelativeLayout.LayoutParams rlp, params_zoom;
-    private FloatingActionButton btnAdd;
+    private FloatingActionButton btnAdd, btnUser;
     private TextView name, location;
-    private ListView listInfo;
+    private ListView  eventsList, listInfo;
     private ChipGroup chipGroup;
     private static final int REQUEST_IMAGE_CAPTURE = 1;
+
+    private PopupWindow pw;
+    private List<Pair<String, Events>> listView = new ArrayList<>();
+    private Button btnLoadMore;
+    private ImageButton btnList;
+    private View ftView;
+    private eventPairsLVAdapter adapter;
+    private Handler mHandler;
+    private int mCurrentPage = 1;
+    private int mItemPerRow = 6;
+    private int countList = 0;
+    public boolean isLoading = false;
+
 
     @SuppressLint("ResourceType")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+
+        //getting the logged in owner info
+        mAuth = FirebaseAuth.getInstance();
+        currentUser = mAuth.getCurrentUser();
+
+        // check if current User is existed or not
+        btnAdd = findViewById(R.id.fab_add);
+        btnUser = findViewById(R.id.fab_user);
+        if (currentUser != null){
+            String email = currentUser.getEmail().charAt(0) + "";
+            btnUser.setImageBitmap(textToBitmap(email.toUpperCase()));
+            btnUser.setVisibility(View.VISIBLE);
+            btnAdd.setVisibility(View.VISIBLE);
+        } else {
+            btnAdd.setVisibility(View.GONE);
+            btnUser.setVisibility(View.GONE);
+        }
 
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -110,6 +162,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         listInfo = findViewById(R.id.listInfo);
         dragLayout = findViewById(R.id.sliding_layout);
         chipGroup = findViewById(R.id.chipGroup);
+        btnList = findViewById(R.id.btnList);
 
         // ZoomControl is inside of RelativeLayout
         zoomControls = mapFragment.getView().findViewById(0x1);
@@ -123,11 +176,43 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         // connect to firebase
         mDataEvents = FirebaseDatabase.getInstance().getReference("Events");
         mDataGeoFire = FirebaseDatabase.getInstance().getReference("GeoFire");
+/*
+        // btnUser function
+        btnUser.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog alertDialog = new AlertDialog.Builder(MapActivity.this).create();
+                alertDialog.setTitle("Sign Out");
+                alertDialog.setMessage("Do you want to sign out?");
+                alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
 
+                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                mAuth.signOut();
+                                SendUserToLoginActivity();
+                            }
+                        });
+                alertDialog.show();
+            }
+        });
+*/
         btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openAddActivity();
+            }
+        });
+
+        btnList.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                initiatePopupWindow(v);
             }
         });
 
@@ -147,6 +232,18 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         dispatchTakePictureIntent();
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (currentUser == null) {
+            super.onBackPressed();
+        }
+    }
+
+    private void SendUserToLoginActivity() {
+        Intent loginIntent = new Intent(MapActivity.this, LoginActivity.class);
+        startActivity(loginIntent);
     }
 
     public void openAddActivity() {
@@ -202,13 +299,18 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     @Override
     public boolean onMarkerClick(Marker marker){
+        getEventInfo(marker.getTitle());
+        return true;
+    }
+
+    public void getEventInfo(final String eventKey) {
         dragLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
         ViewGroup.LayoutParams params = listInfo.getLayoutParams();
         params.height = 1000;
         listInfo.setLayoutParams(params);
         // display information from markers title as event id
         final Query locationDataQuery = FirebaseDatabase.getInstance().getReference("Events")
-                .orderByKey().equalTo(marker.getTitle());
+                .orderByKey().equalTo(eventKey);
         locationDataQuery.addValueEventListener(new ValueEventListener() {
             @RequiresApi(api = Build.VERSION_CODES.M)
             @Override
@@ -310,15 +412,162 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
             }
         });
+    }
 
-//        btnEditInfo.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                openEditBusinessActivity(marker.getTitle());
-//            }
-//        });
+    private void initiatePopupWindow(View v) {
+        try {
+            //We need to get the instance of the LayoutInflater, use the context of this activity
+            LayoutInflater inflater = (LayoutInflater) MapActivity.this
+                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            //Inflate the view from a predefined XML layout
+            View layout = inflater.inflate(R.layout.events_list,
+                    (ViewGroup) findViewById(R.id.popup_layout));
+            // create all screen PopupWindow
+            pw = new PopupWindow(layout, LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT, true);
+            // display the popup in the center
+            pw.showAtLocation(v, Gravity.CENTER, 0, 0);
 
-        return true;
+            Log.i("List", String.valueOf(listView));
+
+            // sort the list by distance
+            Collections.sort(listView, new Comparator<Pair<String, Events>>() {
+                public int compare(Pair<String, Events> event1, Pair<String, Events> event2) {
+                    @SuppressLint("RestrictedApi") double lat1 = event1.getSecond().getL().get(0);
+                    @SuppressLint("RestrictedApi") double lon1 = event1.getSecond().getL().get(1);
+                    @SuppressLint("RestrictedApi") double lat2 = event2.getSecond().getL().get(0);
+                    @SuppressLint("RestrictedApi") double lon2 = event2.getSecond().getL().get(1);
+
+                    double distanceToPlace1 = distance(currentLocation.getLatitude(),
+                            currentLocation.getLongitude(), lat1, lon1);
+                    double distanceToPlace2 = distance(currentLocation.getLatitude(),
+                            currentLocation.getLongitude(), lat2, lon2);
+                    if (distanceToPlace1 > distanceToPlace2) return 1;
+                    if (distanceToPlace1 < distanceToPlace2) return -1;
+                    return 0;
+                }
+            });
+
+            ImageButton mapButton = layout.findViewById(R.id.btnList);
+            mapButton.setOnClickListener(mapView);
+
+            eventsList = layout.findViewById(R.id.eventsList);
+            ftView = inflater.inflate(R.layout.footer_view, null);
+            btnLoadMore = layout.findViewById(R.id.btnLoadMore);
+            mHandler = new MyHandler();
+            mCurrentPage = 1;
+            countList = 0;
+            adapter = new eventPairsLVAdapter(this, getData(mCurrentPage), currentLocation);
+            eventsList.setAdapter(adapter);
+
+            eventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @SuppressLint("RestrictedApi")
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view,
+                                        int position, long id) {
+                    pw.dismiss();
+                    Log.i("key", listView.get(position).getFirst());
+                    getEventInfo(listView.get(position).getFirst());
+                }
+            });
+
+            eventsList.setOnScrollListener(new AbsListView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(AbsListView view, int scrollState) {
+                }
+
+                @Override
+                public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                    //Check when scroll to last item in listview, in this tut, init data in listview = 7 item
+
+                    if (view.getLastVisiblePosition() == totalItemCount - 1 && listView.size() >= 6 && isLoading == false) {
+
+                        btnLoadMore.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                mCurrentPage++;
+                                Thread thread = new ThreadGetMoreData(mCurrentPage);
+                                //Start thread
+                                thread.start();
+                            }
+                        });
+                    }
+                }
+            });
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private View.OnClickListener mapView = new View.OnClickListener() {
+        public void onClick(View v) {
+            pw.dismiss();
+        }
+    };
+
+    public class MyHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case 0:
+                    //Add loading view during search processing
+                    eventsList.addFooterView(ftView);
+                    break;
+                case 1:
+                    //Update data adapter and UI
+                    adapter.addListItemToAdapter((ArrayList<Pair<String, Events>>) msg.obj);
+                    //Remove loading view after update listview
+                    eventsList.removeFooterView(ftView);
+                    isLoading = false;
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    public class ThreadGetMoreData extends Thread {
+
+        private int currentPage;
+
+        public ThreadGetMoreData(int currentPage) {
+            this.currentPage = currentPage;
+        }
+
+        @Override
+        public void run() {
+
+            if (countList <= listView.size()) {
+                //Add footer view after get data
+                mHandler.sendEmptyMessage(0);
+                //Search more data
+                ArrayList<Pair<String, Events>> lstResult = getData(currentPage);
+                //Delay time to show loading footer when debug, remove it when release
+                Log.i("current", String.valueOf(lstResult));
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                //Send the result to Handle
+                Message msg = mHandler.obtainMessage(1, lstResult);
+                mHandler.sendMessage(msg);
+            }
+        }
+    }
+
+
+    private ArrayList<Pair<String, Events>> getData(int page) {
+        List<Pair<String, Events>> subList = new ArrayList<>();
+        for (int i = 0; i < mItemPerRow; i++) {
+            countList++;
+            if (countList <= listView.size()) {
+                subList.add(listView.get(i + ((page - 1) * mItemPerRow)));
+            }
+        }
+        return new ArrayList<>(subList);
     }
 
     private void chipDisplay(final String tag) {
@@ -351,8 +600,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         chip.setText(tagU);
         chipGroup.addView(chip);
     }
-
-
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -526,27 +773,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             @Override
             public void onSuccess(Location location) {
                 if (location != null) {
-//                    currentLocation = location;
-//                    usersData.child(mUID).child("currentLocation")
-//                            .addValueEventListener(new ValueEventListener() {
-//                                @Override
-//                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                                    Double lat = dataSnapshot.child("0").getValue(Double.class);
-//                                    Double lng = dataSnapshot.child("1").getValue(Double.class);
-//
-//                                    if (distance(lat, lng, currentLocation.getLatitude(), currentLocation.getLongitude()) > 10) {
-//                                        usersData.child(mUID).child("currentLocation").child("0").setValue(currentLocation.getLatitude());
-//                                        usersData.child(mUID).child("currentLocation").child("1").setValue(currentLocation.getLongitude());
-//                                        map.clear();
-//                                        listView.clear();
-//                                    }
-//                                }
-//
-//                                @Override
-//                                public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                                }
-//                            });
+                    currentLocation = location;
+                    Double lat = currentLocation.getLatitude();
+                    Double lng = currentLocation.getLongitude();
+                    if (distance(lat, lng, currentLocation.getLatitude(), currentLocation.getLongitude()) > 10) {
+                                        mMap.clear();
+                                        listView.clear();
+                                    }
                 }
 
             }
@@ -558,6 +791,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             public void onKeyEntered(final String key, GeoLocation location) {
                 Query locationDataQuery = FirebaseDatabase.getInstance().getReference("Events").orderByKey().equalTo(key);
                 locationDataQuery.addValueEventListener(new ValueEventListener() {
+                    @SuppressLint("RestrictedApi")
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         //The dataSnapshot should hold the actual data about the location
@@ -566,6 +800,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             double latitude = event.getL().get(0);
                             double longitude = event.getL().get(1);
                             List<String> categories = event.getCategories();
+                            listView.add(new Pair<>(s.getKey(), event));
                             String category;
                             if (categories.size() > 1) {
                                 category = "others";
@@ -632,6 +867,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         return marker;
     }
 
+
     private Bitmap textToBitmap (String text) {
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setTextSize(70);
@@ -642,5 +878,19 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         Canvas canvas = new Canvas(image);
         canvas.drawText(text, 0, baseline, paint);
         return image;
+    }
+
+    private static double distance(double lat1, double lon1, double lat2, double lon2) {
+        if ((lat1 == lat2) && (lon1 == lon2)) {
+            return 0;
+        } else {
+            double theta = lon1 - lon2;
+            double dist = Math.sin(Math.toRadians(lat1)) * Math.sin(Math.toRadians(lat2))
+                    + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.cos(Math.toRadians(theta));
+            dist = Math.acos(dist);
+            dist = Math.toDegrees(dist);
+            dist = dist * 60 * 1.1515;
+            return (dist);
+        }
     }
 }

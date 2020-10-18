@@ -143,6 +143,9 @@ public class AddEventActivity extends AppCompatActivity {
                         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                             if (hourOfDay >= 12) {
                                 amPm = "PM";
+                                if (hourOfDay > 12) {
+                                    hourOfDay = hourOfDay - 12;
+                                }
                             } else {
                                 amPm = "AM";
                             }
@@ -164,9 +167,13 @@ public class AddEventActivity extends AppCompatActivity {
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                         if (hourOfDay >= 12) {
                             amPm = "PM";
+                            if (hourOfDay > 12) {
+                                hourOfDay = hourOfDay - 12;
+                            }
                         } else {
                             amPm = "AM";
                         }
+
                         startTime.setText(String.format("%02d:%02d", hourOfDay, minute) + amPm);
                     }
                 }, currentHour, currentMinute, false);
