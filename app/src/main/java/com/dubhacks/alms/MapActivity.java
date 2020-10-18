@@ -835,7 +835,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         if (cat.toLowerCase().equals("food")) {
             icon = R.mipmap.ic_food;
         } else if (cat.toLowerCase().equals("health care")) {
-            icon =  R.mipmap.ic_essential;
+            icon =  R.mipmap.ic_health;
         } else if (cat.toLowerCase().equals("essential")) {
             icon = R.mipmap.ic_essential;
         } else if (cat.toLowerCase().equals("clothes")) {

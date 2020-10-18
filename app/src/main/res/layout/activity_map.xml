@@ -105,30 +105,31 @@
             android:padding="10dp">
         </com.google.android.material.chip.ChipGroup>
 
-        <ScrollView
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="550dp">
-            <LinearLayout
+            android:layout_height="wrap_content">
+            <ListView
+                android:id="@+id/listInfo"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <ListView
-                    android:id="@+id/listInfo"
-                    android:layout_width="match_parent"
-                    android:layout_height="320dp"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentTop="true"
-                    android:dividerHeight="2dp" >
-                </ListView>
-<!--                <Button-->
-<!--                    android:layout_marginTop="5dp"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:id="@+id/btnEditInfo"-->
-<!--                    android:text="EDIT BUSINESS INFO" />-->
-            </LinearLayout>
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:dividerHeight="2dp" >
+            </ListView>
+        </RelativeLayout>
 
-        </ScrollView>
+
+<!--        <ScrollView-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="550dp">-->
+<!--            <LinearLayout-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:orientation="vertical">-->
+<!--                -->
+<!--            </LinearLayout>-->
+
+<!--        </ScrollView>-->
 
     </LinearLayout>
 
