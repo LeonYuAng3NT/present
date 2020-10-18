@@ -29,8 +29,10 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -123,6 +125,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        final LatLng sanJoseLocation = new LatLng(37.3382082, -121.8863286);
+        createLocationMarker(sanJoseLocation, "Health");
 
         LatLng curr = new LatLng(currentLocation.getLatitude(),
                 currentLocation.getLongitude());
@@ -201,6 +205,33 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             }
         });
 
+    }
+    private void createLocationMarker(LatLng location, String eventType ){
+        switch(eventType) {
+            case "Health":
+                mMap.addMarker( new MarkerOptions()
+                        .position(location)
+                        .title(eventType)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mask)));
+                break;
+            case "Clothe":
+                mMap.addMarker( new MarkerOptions()
+                        .position(location)
+                        .title(eventType)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_clothe)));
+                break;
+            case "Food":
+                mMap.addMarker( new MarkerOptions()
+                        .position(location)
+                        .title(eventType)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_meal)));
+                break;
+            default:
+                mMap.addMarker( new MarkerOptions()
+                        .position(location)
+                        .title(eventType)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_box)));
+        }
     }
 
     private void buildLocationRequest() {
