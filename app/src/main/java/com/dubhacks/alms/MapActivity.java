@@ -149,8 +149,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        final LatLng sanJoseLocation = new LatLng(37.3382082, -121.8863286);
-        createLocationMarker(sanJoseLocation, "Health");
 
         LatLng curr = new LatLng(currentLocation.getLatitude(),
                 currentLocation.getLongitude());
@@ -228,33 +226,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             }
         });
 
-    }
-    private void createLocationMarker(LatLng location, String eventType ){
-        switch(eventType) {
-            case "Health":
-                mMap.addMarker( new MarkerOptions()
-                        .position(location)
-                        .title(eventType)
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mask)));
-                break;
-            case "Clothe":
-                mMap.addMarker( new MarkerOptions()
-                        .position(location)
-                        .title(eventType)
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_clothe)));
-                break;
-            case "Food":
-                mMap.addMarker( new MarkerOptions()
-                        .position(location)
-                        .title(eventType)
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_meal)));
-                break;
-            default:
-                mMap.addMarker( new MarkerOptions()
-                        .position(location)
-                        .title(eventType)
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_box)));
-        }
     }
 
     private void buildLocationRequest() {
