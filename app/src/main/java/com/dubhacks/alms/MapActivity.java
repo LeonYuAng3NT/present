@@ -27,6 +27,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -210,6 +211,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         dragLayout.setFadeOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                addBtnMove();
                 dragLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
             }
         });
@@ -218,6 +220,21 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         fetchLastLocation();
 
+    }
+
+    public void addBtnMove() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        btnAdd.setY(height - dpToPx(MapActivity.this, 126));
+        zoomControls.setY(height - dpToPx(MapActivity.this, 126));
+        locationButton.setY(height - dpToPx(MapActivity.this, 176));
+    }
+
+    public static int dpToPx(Context context, int dp) {
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        float sizePx = (dp * displayMetrics.density);
+        return Math.round(sizePx);
     }
 
     @Override
@@ -264,6 +281,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     }
 
     public void getEventInfo(final String eventKey) {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        btnAdd.setY(height - dpToPx(MapActivity.this, 212));
+        zoomControls.setY(height - dpToPx(MapActivity.this, 212));
+        locationButton.setY(height - dpToPx(MapActivity.this, 262));
+
         dragLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
         ViewGroup.LayoutParams params = listInfo.getLayoutParams();
         params.height = 1000;
@@ -277,12 +301,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot s : dataSnapshot.getChildren()) {
                     final Events event = s.getValue(Events.class);
-                    String nametoSetName = event.name.length() >=20
-                            ? event.name.substring(0,20)+"...":event.name;
+                    String nametoSetName = event.name.length() >= 30
+                            ? event.name.substring(0,30)+"...":event.name;
                     name.setText(nametoSetName);
 
-                    String nametoSetLoc = event.locationName.length() >=20
-                            ? event.locationName.substring(0,20)+"...":event.locationName;
+                    String nametoSetLoc = event.locationName.length() >=35
+                            ? event.locationName.substring(0,35)+"...":event.locationName;
                     location.setText(nametoSetLoc);
 
                     chipGroup.removeAllViews();

@@ -5,10 +5,16 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity {
     Button btnHost, btnUser;
+    private FirebaseUser currentUser;
+    private FirebaseAuth mAuth;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -16,11 +22,18 @@ public class MainActivity extends AppCompatActivity {
         btnHost = findViewById(R.id.btnHost);
         btnUser = findViewById(R.id.btnUser);
 
+        //getting the logged in owner info
+        mAuth = FirebaseAuth.getInstance();
+        currentUser = mAuth.getCurrentUser();
+
         btnHost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openLoginActivity();
-
+                if (currentUser != null) {
+                    openMapsActivity();
+                } else {
+                    openLoginActivity();
+                }
             }
         });
 
