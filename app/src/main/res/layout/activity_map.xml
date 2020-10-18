@@ -29,6 +29,16 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+        <ImageButton
+            android:id="@+id/btnList"
+            android:layout_width="wrap_content"
+            android:layout_height="66dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginLeft="10dp"
+            android:src="@drawable/ic_list"
+            android:backgroundTint="@color/quantum_white_100"
+            />
+
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_add"
             android:layout_width="wrap_content"
@@ -54,7 +64,60 @@
             android:layout_width="match_parent"
             android:layout_height="70dp"
             android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="16sp"
+                android:paddingTop="5sp"
+                android:textSize="24sp"
+                android:textColor="@color/quantum_black_100"
+                android:id="@+id/eventName"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/eventName"
+                android:paddingLeft="16sp"
+                android:textSize="16sp"
+                android:textColor="@color/quantum_black_100"
+                android:divider="?android:attr/dividerHorizontal"
+                android:id="@+id/eventLocation"/>
+
         </RelativeLayout>
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp">
+        </com.google.android.material.chip.ChipGroup>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="550dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <ListView
+                    android:id="@+id/listInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="320dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:divider="@null"
+                    android:dividerHeight="0dp" >
+                </ListView>
+<!--                <Button-->
+<!--                    android:layout_marginTop="5dp"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:id="@+id/btnEditInfo"-->
+<!--                    android:text="EDIT BUSINESS INFO" />-->
+            </LinearLayout>
+
+        </ScrollView>
 
     </LinearLayout>
 

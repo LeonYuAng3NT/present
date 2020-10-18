@@ -2,6 +2,7 @@ package com.dubhacks.alms;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -17,12 +18,19 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
 import android.location.LocationListener;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
+import com.dubhacks.alms.Adapter.EventInfoAdapter;
 import com.dubhacks.alms.Model.Events;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
@@ -44,6 +52,9 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipDrawable;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -57,6 +68,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.core.utilities.Pair;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -78,7 +91,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private View zoomControls, locationButton;
     private RelativeLayout.LayoutParams rlp, params_zoom;
     private FloatingActionButton btnAdd;
-
+    private TextView name, location;
+    private ListView listInfo;
+    private ChipGroup chipGroup;
 
     @SuppressLint("ResourceType")
     @Override
@@ -89,6 +104,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         btnAdd = findViewById(R.id.fab_add);
+        name = findViewById(R.id.eventName);
+        location = findViewById(R.id.eventLocation);
+        listInfo = findViewById(R.id.listInfo);
+        dragLayout = findViewById(R.id.sliding_layout);
+        chipGroup = findViewById(R.id.chipGroup);
 
         // ZoomControl is inside of RelativeLayout
         zoomControls = mapFragment.getView().findViewById(0x1);
@@ -107,6 +127,14 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             @Override
             public void onClick(View v) {
                 openAddActivity();
+            }
+        });
+
+        // dragLayout click function
+        dragLayout.setFadeOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dragLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
             }
         });
 
@@ -142,9 +170,158 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     }
 
     @Override
-    public boolean onMarkerClick(Marker marker) {
-        return false;
+    public boolean onMarkerClick(Marker marker){
+        dragLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+        ViewGroup.LayoutParams params = listInfo.getLayoutParams();
+        params.height = 1000;
+        listInfo.setLayoutParams(params);
+        // display information from markers title as event id
+        final Query locationDataQuery = FirebaseDatabase.getInstance().getReference("Events")
+                .orderByKey().equalTo(marker.getTitle());
+        locationDataQuery.addValueEventListener(new ValueEventListener() {
+            @RequiresApi(api = Build.VERSION_CODES.M)
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot s : dataSnapshot.getChildren()) {
+                    final Events event = s.getValue(Events.class);
+                    String nametoSetName = event.name.length() >=20
+                            ? event.name.substring(0,20)+"...":event.name;
+                    name.setText(nametoSetName);
+
+                    String nametoSetLoc = event.locationName.length() >=20
+                            ? event.locationName.substring(0,20)+"...":event.locationName;
+                    location.setText(nametoSetLoc);
+
+                    chipGroup.removeAllViews();
+                    for (String tag : event.categories) {
+                        chipDisplay(tag);
+                    }
+
+                    // get name, location and category from firebase
+                    String address = "", url = "", hours = "", description ="", date ="";
+                    address = event.address;
+
+                    if (event.url == null || event.url.isEmpty()) {
+                        url = "";
+                    } else {
+                        if (!event.url.startsWith("www.")) {
+                            url = "https://www." + event.url.toLowerCase();
+                        } else if (!event.url.startsWith("https://")){
+                            url = "https://" + event.url.toLowerCase();
+                        }
+                    }
+
+                    hours = event.startTime;
+                    date = event.date;
+                    description = event.description;
+
+                    if (event.url.equals("")) {
+                        final String[] eventInfo = {address, hours, date, description};
+                        Integer[] imgid = {
+                                R.drawable.ic_location,
+                                R.drawable.ic_hours,
+                                R.drawable.ic_date,
+                                R.drawable.ic_description,
+                        };
+
+                        EventInfoAdapter adapter = new EventInfoAdapter(
+                                MapActivity.this, eventInfo, imgid);
+                        listInfo.setAdapter(adapter);
+
+                        listInfo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view,
+                                                    int position, long id) {
+                                if (position == 0) {
+                                    String selectedItem = "http://maps.google.co.in/maps?q=" + eventInfo[position];
+                                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(selectedItem));
+                                    startActivity(intent);
+                                }
+                            }
+                        });
+
+
+                    } else {
+                        final String[] eventInfo = {address, url, hours, date, description};
+                        Integer[] imgid = {
+                                R.drawable.ic_location,
+                                R.drawable.ic_url,
+                                R.drawable.ic_hours,
+                                R.drawable.ic_date,
+                                R.drawable.ic_description,
+                        };
+
+                        EventInfoAdapter adapter = new EventInfoAdapter(
+                                MapActivity.this, eventInfo, imgid);
+                        listInfo.setAdapter(adapter);
+
+                        listInfo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view,
+                                                    int position, long id) {
+                                if (position == 1) {
+                                    String selectedItem = eventInfo[position];
+                                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(selectedItem));
+                                    startActivity(intent);
+                                } else if (position == 0) {
+                                    String selectedItem = "http://maps.google.co.in/maps?q=" + eventInfo[position];
+                                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(selectedItem));
+                                    startActivity(intent);
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+//        btnEditInfo.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                openEditBusinessActivity(marker.getTitle());
+//            }
+//        });
+
+        return true;
     }
+
+    private void chipDisplay(final String tag) {
+        final Chip chip = new Chip(MapActivity.this);
+        ChipDrawable chipDrawable = ChipDrawable.createFromAttributes(MapActivity.this,
+                null, 0, R.style.Widget_MaterialComponents_Chip_Entry);
+        chip.setChipDrawable(chipDrawable);
+        chip.setCheckable(false);
+        chip.setClickable(false);
+        chip.setCloseIconVisible(false);
+        chip.setPadding(60, 10, 60, 10);
+
+        switch (tag.toLowerCase()) {
+            case "food":
+                chip.setChipIconResource(R.mipmap.ic_food);
+                break;
+            case "health care":
+                chip.setChipIconResource(R.mipmap.ic_health);
+                break;
+            case "clothes":
+                chip.setChipIconResource(R.mipmap.ic_clothes);
+                break;
+            case "essential":
+                chip.setChipIconResource(R.mipmap.ic_essential);
+                break;
+        }
+
+        String tagU = tag.substring(0, 1).toUpperCase()
+                + tag.substring(1);
+        chip.setText(tagU);
+        chipGroup.addView(chip);
+    }
+
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
