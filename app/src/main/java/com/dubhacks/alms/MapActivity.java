@@ -230,7 +230,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         fetchLastLocation();
 
-        dispatchTakePictureIntent();
+        //dispatchTakePictureIntent();
 
     }
 
@@ -250,7 +250,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         Intent intent = new Intent(MapActivity.this, AddEventActivity.class);
         startActivity(intent);
     }
-
+/*
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         try {
@@ -276,7 +276,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         }
     }
-
+*/
     @Override
     public void onLocationChanged(Location location) {
 
