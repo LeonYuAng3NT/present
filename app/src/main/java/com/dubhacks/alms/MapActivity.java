@@ -4,12 +4,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.ImageAnalysis;
+import androidx.camera.core.ImageCapture;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -22,7 +25,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.util.Log;
+import android.util.Size;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -67,11 +72,6 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.core.utilities.Pair;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener,
@@ -94,6 +94,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private TextView name, location;
     private ListView listInfo;
     private ChipGroup chipGroup;
+    private static final int REQUEST_IMAGE_CAPTURE = 1;
 
     @SuppressLint("ResourceType")
     @Override
@@ -138,15 +139,45 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             }
         });
 
+
+
         // retrieve current Location from the phone
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         fetchLastLocation();
+
+        dispatchTakePictureIntent();
 
     }
 
     public void openAddActivity() {
         Intent intent = new Intent(MapActivity.this, AddEventActivity.class);
         startActivity(intent);
+    }
+
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        try {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        } catch (ActivityNotFoundException e) {
+            // display error state to the user
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            ImageAnalysis imageAnalysis =  new ImageAnalysis.Builder()
+                    .setTargetResolution(new Size(1280, 720))
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .build();
+            LandMarkAnalyzer analyzer = new LandMarkAnalyzer();
+            analyzer.analyze(imageBitmap);
+
+        }
     }
 
     @Override
